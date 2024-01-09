@@ -257,6 +257,19 @@ def gen_cities_avg(climate, multi_cities, years):
         cities for a given year.
     """
     # TODO
+    nat_yearly_temp =[]
+    xval_year = []
+    for year in years:
+        avg_temp_nat_year =[]
+        for city in multi_cities:
+            avg_temp_nat_year.append(climate.get_yearly_temp(city, year).mean())
+        nat_yearly_temp.append(pylab.array(avg_temp_nat_year).mean())
+        #print (year, ": ", len(avg_temp_nat_year))
+        #print("year", year, " national temperature: ", nat_yearly_temp)
+    return pylab.array(nat_yearly_temp)
+
+
+
     pass
 
 def moving_average(y, window_length):
@@ -355,9 +368,23 @@ if __name__ == '__main__':
     xval=pylab.array(xval)
     yval = pylab.array(temperature)
     NY_model = generate_models(xval,yval,[1])
-    evaluate_models_on_training (xval,yval,NY_model)
-
-    print (temperature)
+    #evaluate_models_on_training (xval,yval,NY_model)
+    city = "NEW YORK"
+    i=0
+    yearly_temp =[]
+    xval_year = []
+    for year in TRAINING_INTERVAL:
+        yearly_temp.append(climate_data.get_yearly_temp(city, year).mean())
+        xval_year.append(year)
+        #print (year,":",yearly_temp[i])
+        #print(yearly_temp)
+        #i+=1
+    xval = pylab.array(xval_year)
+    yval = pylab.array(yearly_temp)
+    yearly_NY_model = generate_models(xval,yval,[1])
+    gen_cities_avg(climate_data, CITIES, TRAINING_INTERVAL)
+    #evaluate_models_on_training (xval,yval,yearly_NY_model)
+    #print (temperature)
     # Part B
     # TODO: replace this line with your code
 
