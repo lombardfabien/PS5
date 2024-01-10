@@ -287,6 +287,34 @@ def moving_average(y, window_length):
         y-coordinates of the N sample points
     """
     # TODO
+    #print (y)
+    moving_average_array = []
+    i = 0
+    while i < len(y):
+        list_to_average = []
+        window = i - window_length + 1
+        index = 0
+        sum = 0
+        """ calculate moving average for early number """
+        if window < 0:
+            while index <= i:
+                sum = y[index] + sum
+                #print(sum)
+                index+=1
+            moving_average_array.append(sum/(index))
+            #print ("first value:", window,"values to average:", y[index], "value index:", i, "length", index)
+
+        else:
+            """ calculate average included in the window lenght"""
+            #print ("first value:", window,"last value:", i, "values to average:", y[window:i+1], "length", len(y[window:i+1]))
+            sum = 0
+            for item in y[window:i+1]:
+                sum = sum + item
+            moving_average_array.append(sum/len(y[window:i+1]))
+            #print(moving_average_array[-1])
+        i+=1
+    #print("moving average list:", moving_average_array)
+    return moving_average_array
     pass
 
 def rmse(y, estimated):
@@ -368,7 +396,7 @@ if __name__ == '__main__':
     xval=pylab.array(xval)
     yval = pylab.array(temperature)
     NY_model = generate_models(xval,yval,[1])
-    #evaluate_models_on_training (xval,yval,NY_model)
+    evaluate_models_on_training (xval,yval,NY_model)
     city = "NEW YORK"
     i=0
     yearly_temp =[]
@@ -382,15 +410,22 @@ if __name__ == '__main__':
     xval = pylab.array(xval_year)
     yval = pylab.array(yearly_temp)
     yearly_NY_model = generate_models(xval,yval,[1])
-    gen_cities_avg(climate_data, CITIES, TRAINING_INTERVAL)
-    #evaluate_models_on_training (xval,yval,yearly_NY_model)
+    evaluate_models_on_training (xval,yval,yearly_NY_model)
     #print (temperature)
     # Part B
     # TODO: replace this line with your code
+    national_yearly_temp = []
+    national_yearly_temp = gen_cities_avg(climate_data, CITIES, TRAINING_INTERVAL)
+    #xval = pylab.array(xval_year)
+    yval = pylab.array(national_yearly_temp)
+    yearly_national_model = generate_models(xval,yval,[1])
 
+    evaluate_models_on_training (xval,yval,yearly_national_model)
     # Part C
     # TODO: replace this line with your code
-
+    yval_moving_average = pylab.array(moving_average(yval, 5))
+    yearly_national_model_moving_avg = generate_models(xval,yval_moving_average,[1])
+    evaluate_models_on_training (xval,yval_moving_average,yearly_national_model_moving_avg)
     # Part D.2
     # TODO: replace this line with your code
 
