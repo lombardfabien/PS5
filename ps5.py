@@ -165,6 +165,7 @@ def generate_models(x, y, degs):
     """
     # TODO
     """ for each degree, generate a model and implement it in models"""
+    #assert degs ==[]
     models =[]
     for deg in degs:
         model = pylab.polyfit(x,y,deg)
@@ -227,11 +228,12 @@ def evaluate_models_on_training(x, y, models):
         y_estimate = pylab.polyval(models[i], x)
         R2 = r_squared(y, y_estimate)
         """if model is degree one or len of 2, se slope to be calculated"""
-        if len(models[i]==2):
+        if len(models[i])==2:
             se = se_over_slope(x, y, y_estimate, models[i])
             pylab.plot(x,y_estimate,"-r", label = "model " + str(i) + " R2: " + str(round(R2,5)) + " se slope: " + str(round(se,5)))
         #"""if other than 1 degre model, plot the curve without se slope"""
         else:
+            pylab.plot(x,y,"ob", label = "data")
             pylab.plot(x,y_estimate,"-r", label = "model " + str(i) + " R2: " + str(round(R2,5)))
         pylab.xlabel("Year")
         pylab.ylabel("maximum temperature in Celsius")
@@ -260,10 +262,10 @@ def gen_cities_avg(climate, multi_cities, years):
     nat_yearly_temp =[]
     xval_year = []
     for year in years:
-        avg_temp_nat_year =[]
+        avg_temp_nat_day = []
         for city in multi_cities:
-            avg_temp_nat_year.append(climate.get_yearly_temp(city, year).mean())
-        nat_yearly_temp.append(pylab.array(avg_temp_nat_year).mean())
+            avg_temp_nat_day.append(climate.get_yearly_temp(city, year).mean())
+        nat_yearly_temp.append(pylab.array(avg_temp_nat_day).mean())
         #print (year, ": ", len(avg_temp_nat_year))
         #print("year", year, " national temperature: ", nat_yearly_temp)
     return pylab.array(nat_yearly_temp)
@@ -331,6 +333,15 @@ def rmse(y, estimated):
         a float for the root mean square error term
     """
     # TODO
+    diff = 0
+    sum = 0
+    for i in range(len(y)):
+        diff = (y[i]-estimated[i])**2
+        sum = sum + diff
+
+    return ((sum/len(y))**0.5)
+
+
     pass
 
 def gen_std_devs(climate, multi_cities, years):
@@ -349,6 +360,35 @@ def gen_std_devs(climate, multi_cities, years):
         city temperatures for the given cities in a given year.
     """
     # TODO
+    nat_yearly_temp =[]
+    xval_year = []
+    lastday=0
+    for year in years:
+        daily_avg_all_cities =[]
+        for month in range(1,13):
+            if month in [4,6,9,11]:
+                #print( "this month for 30days")
+                lastday = 30
+            elif month == 2:
+                if (((year % 4 == 0) and (year % 100 != 0)) or (year % 400 ==0)):
+                    lastday = 29
+                else:
+                    lastday = 28
+            else:
+                lastday = 31
+            for day in range(1,lastday+1):
+                avg_temp_nat_day = []
+                for city in multi_cities:
+                    #print("city:", city, "year:", year, "month:", month, "day:", day)
+                    avg_temp_nat_day.append(climate.get_daily_temp(city, month, day, year))
+                daily_avg_all_cities.append(pylab.array(avg_temp_nat_day).mean())
+        nat_yearly_temp.append(pylab.array(daily_avg_all_cities).std())
+        #print (year, ": ", len(avg_temp_nat_year))
+        #print("year", year, " national temperature: ", nat_yearly_temp)
+    #print (nat_yearly_temp)
+    return pylab.array(nat_yearly_temp)
+
+
     pass
 
 def evaluate_models_on_testing(x, y, models):
@@ -376,6 +416,25 @@ def evaluate_models_on_testing(x, y, models):
         None
     """
     # TODO
+    #pylab.plot(x,y,"ob", label = "data")
+    for i in range (len(models)):
+        y_estimate = pylab.polyval(models[i], x)
+        RSME = rmse(y, y_estimate)
+        """if model is degree one or len of 2, se slope to be calculated"""
+        """
+        if len(models[i]==2):
+            se = se_over_slope(x, y, y_estimate, models[i])
+            pylab.plot(x,y_estimate,"-r", label = "model " + str(i) + " RMSE: " + str(round(RSME,5)) + " se slope: " + str(round(se,5)))
+        if other than 1 degre model, plot the curve without se slope
+        else:
+        """
+        pylab.plot(x,y,"ob", label = "data")
+        pylab.plot(x,y_estimate,"-r", label = "model " + str(i) + " RMSE: " + str(round(RSME,5)))
+        pylab.xlabel("Year")
+        pylab.ylabel("maximum temperature in Celsius")
+        pylab.legend(loc ='best')
+        pylab.title("average temperature over the years")
+        pylab.show()
     pass
 
 if __name__ == '__main__':
@@ -396,7 +455,7 @@ if __name__ == '__main__':
     xval=pylab.array(xval)
     yval = pylab.array(temperature)
     NY_model = generate_models(xval,yval,[1])
-    evaluate_models_on_training (xval,yval,NY_model)
+    #evaluate_models_on_training (xval,yval,NY_model)
     city = "NEW YORK"
     i=0
     yearly_temp =[]
@@ -410,7 +469,7 @@ if __name__ == '__main__':
     xval = pylab.array(xval_year)
     yval = pylab.array(yearly_temp)
     yearly_NY_model = generate_models(xval,yval,[1])
-    evaluate_models_on_training (xval,yval,yearly_NY_model)
+    #evaluate_models_on_training (xval,yval,yearly_NY_model)
     #print (temperature)
     # Part B
     # TODO: replace this line with your code
@@ -420,14 +479,31 @@ if __name__ == '__main__':
     yval = pylab.array(national_yearly_temp)
     yearly_national_model = generate_models(xval,yval,[1])
 
-    evaluate_models_on_training (xval,yval,yearly_national_model)
+    #evaluate_models_on_training (xval,yval,yearly_national_model)
     # Part C
     # TODO: replace this line with your code
     yval_moving_average = pylab.array(moving_average(yval, 5))
     yearly_national_model_moving_avg = generate_models(xval,yval_moving_average,[1])
-    evaluate_models_on_training (xval,yval_moving_average,yearly_national_model_moving_avg)
+    #evaluate_models_on_training (xval,yval_moving_average,yearly_national_model_moving_avg)
     # Part D.2
     # TODO: replace this line with your code
+    yval_moving_average = pylab.array(moving_average(yval, 5))
+    yearly_national_model_moving_avg = generate_models(xval,yval_moving_average,[1,2,20])
+    #print (yearly_national_model_moving_avg)
+    #evaluate_models_on_training (xval,yval_moving_average,yearly_national_model_moving_avg)
+    """ predict the result on TESTING_INTERVAL"""
+    test_xval_year = []
+    test_yearly_temp = []
+    test_yearly_temp = gen_cities_avg(climate_data, CITIES, TESTING_INTERVAL)
+    yval_test_moving_average = pylab.array(moving_average(test_yearly_temp,5))
+    for year in TESTING_INTERVAL:
+        test_xval_year.append(year)
+    xval = pylab.array(test_xval_year)
+    print (xval, yval_test_moving_average)
+    #yval = pylab.array(test_yearly_temp)
+
+    evaluate_models_on_testing (xval,yval_test_moving_average,yearly_national_model_moving_avg)
+
 
     # Part E
     # TODO: replace this line with your code
