@@ -382,10 +382,11 @@ def gen_std_devs(climate, multi_cities, years):
                     #print("city:", city, "year:", year, "month:", month, "day:", day)
                     avg_temp_nat_day.append(climate.get_daily_temp(city, month, day, year))
                 daily_avg_all_cities.append(pylab.array(avg_temp_nat_day).mean())
+        #print("year", year, " std dev: ", pylab.array(daily_avg_all_cities).std())
         nat_yearly_temp.append(pylab.array(daily_avg_all_cities).std())
         #print (year, ": ", len(avg_temp_nat_year))
-        #print("year", year, " national temperature: ", nat_yearly_temp)
-    #print (nat_yearly_temp)
+        #print("year", year, " std dev: ", nat_yearly_temp)
+    #print (len(nat_yearly_temp))
     return pylab.array(nat_yearly_temp)
 
 
@@ -499,11 +500,21 @@ if __name__ == '__main__':
     for year in TESTING_INTERVAL:
         test_xval_year.append(year)
     xval = pylab.array(test_xval_year)
-    print (xval, yval_test_moving_average)
+    #print (xval, yval_test_moving_average)
     #yval = pylab.array(test_yearly_temp)
 
-    evaluate_models_on_testing (xval,yval_test_moving_average,yearly_national_model_moving_avg)
+    #evaluate_models_on_testing (xval,yval_test_moving_average,yearly_national_model_moving_avg)
 
 
     # Part E
     # TODO: replace this line with your code
+    std_dev_nat = gen_std_devs(climate_data, CITIES, TRAINING_INTERVAL)
+    yval_std_dev_net = pylab.array(moving_average(std_dev_nat,5))
+    #print(yval_std_dev_net)
+    test_xval_year =[]
+    for year in TRAINING_INTERVAL:
+        test_xval_year.append(year)
+    xval = pylab.array(test_xval_year)
+    #print (len(xval), len(yval_std_dev_net), len(std_dev_nat))
+    model_std_dev_moving_avg = generate_models(xval,yval_std_dev_net,[1])
+    evaluate_models_on_training (xval,yval_std_dev_net,model_std_dev_moving_avg)
